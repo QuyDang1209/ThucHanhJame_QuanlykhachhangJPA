@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public class CustomerController {
     private ICustomerService customerService;
 
     @GetMapping("")
-    public String index(Model model) {
+    public String index(Model model) throws Exception {
         List<Customer> customerList = customerService.findAll();
         model.addAttribute("customers", customerList);
         return "/index";
@@ -69,6 +70,17 @@ public class CustomerController {
     public String view(@PathVariable Long id, Model model) {
         model.addAttribute("customer", customerService.findById(id));
         return "/view";
+    }
+    @GetMapping("/{id}")
+    public ModelAndView showInformation(@PathVariable Long id) {
+        try {
+            ModelAndView modelAndView = new ModelAndView("/info");
+            Customer customer = customerService.findOne(id);
+            modelAndView.addObject("customer", customer);
+            return modelAndView;
+        } catch (Exception e) {
+            return new ModelAndView("redirect:/customers");
+        }
     }
 }
 
