@@ -1,14 +1,14 @@
 package com.cg.thuchanhquanlykhachhangjpa.service;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface IGenerateService<T> {
-    List<T> findAll() throws Exception;
+public interface IGenerateService<E> {
+    Iterable<E> findAll();
 
-    void save(T t);
+    Optional<E> findById(Long id);
 
-    T findById(Long id);
+    E save(E e);
 
     void remove(Long id);
-    T findOne(Long id) throws Exception;
 }

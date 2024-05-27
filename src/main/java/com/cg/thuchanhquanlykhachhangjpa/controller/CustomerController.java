@@ -5,82 +5,64 @@ package com.cg.thuchanhquanlykhachhangjpa.controller;
 import com.cg.thuchanhquanlykhachhangjpa.model.Customer;
 import com.cg.thuchanhquanlykhachhangjpa.service.ICustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Optional;
 
-@Controller
-@RequestMapping("/customers")
+@RestController
+@RequestMapping("/api/customers")
 public class CustomerController {
     @Autowired
-    private ICustomerService customerService;
-
-    @GetMapping("")
-    public String index(Model model) throws Exception {
-        List<Customer> customerList = customerService.findAll();
-        model.addAttribute("customers", customerList);
-        return "/index";
-    }
-
-    @GetMapping("/create")
-    public String create(Model model) {
-        model.addAttribute("customer", new Customer());
-        return "/create";
-    }
-
-    @PostMapping("/save")
-    public String save(Customer customer) {
-        customerService.save(customer);
-        return "redirect:/customers";
-    }
-
-    @GetMapping("/{id}/edit")
-    public String update(@PathVariable Long id, Model model) {
-        model.addAttribute("customer", customerService.findById(id));
-        return "/update";
-    }
-
-    @PostMapping("/update")
-    public String update(Customer customer) {
-        customerService.save(customer);
-        return "redirect:/customers";
-    }
-
-    @GetMapping("/{id}/delete")
-    public String delete(@PathVariable Long id, Model model) {
-        model.addAttribute("customer", customerService.findById(id));
-        return "/delete";
-    }
-
-    @PostMapping("/delete")
-    public String delete(Customer customer, RedirectAttributes redirect) {
-        customerService.remove(customer.getId());
-        redirect.addFlashAttribute("success", "Removed customer successfully!");
-        return "redirect:/customers";
-    }
-
-    @GetMapping("/{id}/view")
-    public String view(@PathVariable Long id, Model model) {
-        model.addAttribute("customer", customerService.findById(id));
-        return "/view";
-    }
-    @GetMapping("/{id}")
-    public ModelAndView showInformation(@PathVariable Long id) {
-        try {
-            ModelAndView modelAndView = new ModelAndView("/info");
-            Customer customer = customerService.findOne(id);
-            modelAndView.addObject("customer", customer);
-            return modelAndView;
-        } catch (Exception e) {
-            return new ModelAndView("redirect:/customers");
+    private ICustomerService iCustomerService;
+    @GetMapping
+    public ResponseEntity<Iterable<Customer>> findAllCustomer() {
+        List<Customer> customers = (List<Customer>) iCustomerService.findAll();
+        if (customers.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+        return new ResponseEntity<>(customers, HttpStatus.OK);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Customer> findCustomerById(@PathVariable Long id) {
+        Optional<Customer> customerOptional = iCustomerService.findById(id);
+        if (!customerOptional.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(customerOptional.get(), HttpStatus.OK);
+    }
+
+    @PostMapping
+    public ResponseEntity<Customer> saveCustomer(@RequestBody Customer customer) {
+        return new ResponseEntity<>(iCustomerService.save(customer), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Customer> updateCustomer(@PathVariable Long id, @RequestBody Customer customer) {
+        Optional<Customer> customerOptional = iCustomerService.findById(id);
+        if (!customerOptional.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        customer.setId(customerOptional.get().getId());
+        return new ResponseEntity<>(iCustomerService.save(customer), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Customer> deleteCustomer(@PathVariable Long id) {
+        Optional<Customer> customerOptional = iCustomerService.findById(id);
+        if (!customerOptional.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        iCustomerService.remove(id);
+        return new ResponseEntity<>(customerOptional.get(), HttpStatus.OK);
+    }
+
 }
 

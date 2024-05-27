@@ -2,12 +2,12 @@ package com.cg.thuchanhquanlykhachhangjpa.repository;
 
 import java.util.List;
 
-public interface IGenerateRepository<T> {
-    List<T> findAll();
-
-    T findById(Long id);
-
-    void save(T t);
-
-    void remove(Long id);
-}
+//public interface IGenerateRepository<T> {
+//    List<T> findAll();
+//
+//    T findById(Long id);
+//
+//    void save(T t);
+//
+//    void remove(Long id);
+//}
